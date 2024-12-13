@@ -3,6 +3,7 @@ import { SERVER_PORT } from "../src/constants/env.constant.js";
 import { errorHandler } from "../src/middlewares/error-handler.middleware.js";
 import { HTTPS_STATUS } from "./constants/http.status.constant.js";
 import "./utils/prisma.util.js";
+import apiRouter from "./routers/index.js";
 
 const app = express();
 
@@ -14,6 +15,8 @@ app.get("/health-check", (req, res) => {
     .status(HTTPS_STATUS.OK)
     .send(`${SERVER_PORT}번 서버로 입장이 무사히 완료되었습니다.`);
 });
+
+app.use("/api", apiRouter);
 
 app.use(errorHandler);
 
