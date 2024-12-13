@@ -19,18 +19,36 @@ model User {
   email     String   @unique @map("email")
   password  String   @map("password")
   name      String   @map("name")
-  role      Role     @map("role")
+  role      Role     @default(APPLICANT) @map("role")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  resumes Resume[]
+  resumes      Resume[]
+  resumeLogs   ResumeLog[]
+  refreshToken RefreshToken?
 
-  @@map("Users")
+  // ?가 붙는 이유는 있거나 아에 없을 수 있기 때문에 
+  @@map("users")
 }
 
 enum Role {
   APPLICANT
   RECRUITER
+}
+
+model ResumeLog {
+  id          Int      @id @default(autoincrement()) @map("id")
+  resumeId    Int      @map("resume_id")
+  recruiterId Int      @map("recruiter_id")
+  oldStatus   Status   @map("old_status")
+  newStatus   Status   @map("new_status")
+  reason      String   @map("reason")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  resume    Resume @relation(fields: [resumeId], references: [resumeId], onDelete: Cascade)
+  recruiter User   @relation(fields: [recruiterId], references: [userId], onDelete: Cascade)
+
+  @@map("resume_logs")
 }
 
 // Resume 테이블
@@ -39,13 +57,26 @@ model Resume {
   userId    Int      @map("user_id")
   title     String   @map("title")
   content   String   @map("content") @db.Text
-  status    Status   @map("status")
+  status    Status   @default(APPLY) @map("status")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
+  user       User        @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  ResumeLogs ResumeLog[]
+
+  @@map("resumes")
+}
+
+model RefreshToken {
+  id           Int      @id @default(autoincrement()) @map("id")
+  userId       Int      @unique @map("user_id")
+  refreshToken String?  @map("refresh_token")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
   user User @relation(fields: [userId], references: [userId], onDelete: Cascade)
 
-  @@map("Resumes")
+  @@map("refresh_tokens")
 }
 
 enum Status {
